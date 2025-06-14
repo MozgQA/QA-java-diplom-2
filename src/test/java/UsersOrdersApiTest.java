@@ -6,23 +6,24 @@ import io.restassured.RestAssured;
 import model.User;
 import model.UserCredentials;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.empty;
 
-public class UsersOrdersApiTest {
+public class UsersOrdersApiTest extends BaseUserTest{
 
-    private UserClient userClient;
-    private User user;
-    private String accessToken;
     private OrderClient orderClient;
 
-    @After
-    public void cleanUp() {
-        if (accessToken != null) {
-            userClient.delete(accessToken, UserCredentials.from(user));
-        }
+    @Override
+    @Before
+    public void setUp() {
+        super.setUp();
+        getUserClient().create(getUser());
+        orderClient = new OrderClient();
     }
 
     @Test
@@ -30,7 +31,7 @@ public class UsersOrdersApiTest {
     public void getUsersOrdersWithoutAuthorization() {
         orderClient = new OrderClient();
         orderClient.getOrdersWithoutAuthorization()
-                .statusCode(401)
+                .statusCode(SC_UNAUTHORIZED)
                 .body("success", equalTo(false))
                 .body("message", equalTo("You should be authorised"));
     }
@@ -38,15 +39,12 @@ public class UsersOrdersApiTest {
     @Test
     @DisplayName("Тест на получение заказов авторизованного пользователя")
     public void getUsersOrdersWithAuthorization() {
-        userClient = new UserClient();
-        user = UserGenerator.getRandom();
-        userClient.create(user);
-        accessToken = userClient.login(UserCredentials.from(user))
+       setAccessToken(getUserClient().login(UserCredentials.from(getUser()))
                 .body("accessToken", notNullValue())
-                .extract().path("accessToken");
+                .extract().path("accessToken"));
         orderClient = new OrderClient();
-        orderClient.getOrdersWithAuthorization(accessToken)
-                .statusCode(200)
+        orderClient.getOrdersWithAuthorization(getAccessToken())
+                .statusCode(SC_OK)
                 .body("success", equalTo(true))
                 .body("order", not(empty()));
     }

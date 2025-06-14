@@ -11,65 +11,71 @@ import org.junit.Before;
 import org.junit.Test;
 import model.User;
 
+import static org.apache.http.HttpStatus.SC_FORBIDDEN;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
-public class UserApiTest {
-
-    private UserClient userClient;
-    private User user;
-    private String accessToken;
-
-    @Before
-    public void setUp() {
-        userClient = new UserClient();
-        user = UserGenerator.getRandom();
-    }
-
-    @After
-    public void cleanUp() {
-        if (accessToken != null) {
-            userClient.delete(accessToken, UserCredentials.from(user));
-        }
-    }
-
+public class UserApiTest extends BaseUserTest{
     @Test
     @DisplayName("Тест на создание пользователя")
     public void userCanBeCreated() {
-        userClient.create(user)
-                .statusCode(200)
+        getUserClient().create(getUser())
+                .statusCode(SC_OK)
                 .body("success", equalTo(true));
 
-        accessToken = userClient.login(UserCredentials.from(user))
-                .statusCode(200)
+        setAccessToken(getUserClient().login(UserCredentials.from(getUser()))
+                .statusCode(SC_OK)
                 .body("accessToken", notNullValue())
-                .extract().path("accessToken");
+                .extract().path("accessToken"));
     }
 
     @Test
     @DisplayName("Тест на создание уже зарегистрированного пользователя")
     public void userAlreadyRegistered() {
-        userClient.create(user)
-                .statusCode(200)
+        getUserClient().create(getUser())
+                .statusCode(SC_OK)
                 .body("success", equalTo(true));
 
-        accessToken = userClient.login(UserCredentials.from(user))
-                .extract().path("accessToken");
+        setAccessToken(getUserClient().login(UserCredentials.from(getUser()))
+                .extract().path("accessToken"));
 
-        userClient.create(user)
-                .statusCode(403)
+        getUserClient().create(getUser())
+                .statusCode(SC_FORBIDDEN)
                 .body("success", equalTo(false))
                 .body("message", equalTo("User already exists"));
     }
 
     @Test
-    @DisplayName("Тест на создание пользователя без обязательного поля")
-    public void userCreateWithoutPassword() {
-        user.setPassword(null);
-        userClient.create(user)
-                .statusCode(403)
+    @DisplayName("Тест на создание пользователя без наименования")
+    public void userCreateWithoutName() {
+        getUser().setPassword(null);
+        getUserClient().create(getUser())
+                .statusCode(SC_FORBIDDEN)
                 .body("message", equalTo("Email, password and name are required fields"));
-        accessToken = userClient.login(UserCredentials.from(user))
-                .extract().path("accessToken");
+        setAccessToken(getUserClient().login(UserCredentials.from(getUser()))
+                .extract().path("accessToken"));
+    }
+
+    @Test
+    @DisplayName("Тест на создание пользователя без пароля")
+    public void userCreateWithoutPassword() {
+        getUser().setPassword(null);
+        getUserClient().create(getUser())
+                .statusCode(SC_FORBIDDEN)
+                .body("message", equalTo("Email, password and name are required fields"));
+        setAccessToken(getUserClient().login(UserCredentials.from(getUser()))
+                .extract().path("accessToken"));
+    }
+
+    @Test
+    @DisplayName("Тест на создание пользователя без email")
+    public void userCreateWithoutEmail() {
+        getUser().setEmail(null);
+        getUserClient().create(getUser())
+                .statusCode(SC_FORBIDDEN)
+                .body("message", equalTo("Email, password and name are required fields"));
+        setAccessToken(getUserClient().login(UserCredentials.from(getUser()))
+                .extract().path("accessToken"));
     }
 }

@@ -1,5 +1,6 @@
 package client;
 
+import io.qameta.allure.Step;
 import io.restassured.response.ValidatableResponse;
 import model.Order;
 
@@ -9,6 +10,7 @@ public class OrderClient extends RestClient {
 
     private static final String ORDERS_PATH = "api/orders";
 
+    @Step("Создание заказа с авторизацией")
     public ValidatableResponse createOrderWithAuthorization(String accessToken, Order order) {
         return given()
                 .spec(getBaseSpec())
@@ -19,6 +21,7 @@ public class OrderClient extends RestClient {
                 .then();
     }
 
+    @Step("Создание заказа без авторизации")
     public ValidatableResponse createOrderWithoutAuthorization(Order order) {
         return given()
                 .spec(getBaseSpec())
@@ -28,6 +31,7 @@ public class OrderClient extends RestClient {
                 .then();
     }
 
+    @Step("Получение списка заказов с авторизацией")
     public ValidatableResponse getOrdersWithAuthorization(String accessToken) {
         return given()
                 .spec(getBaseSpec())
@@ -37,6 +41,7 @@ public class OrderClient extends RestClient {
                 .then();
     }
 
+    @Step("Получение списка заказов без авторизации")
     public ValidatableResponse getOrdersWithoutAuthorization() {
         return given()
                 .spec(getBaseSpec())

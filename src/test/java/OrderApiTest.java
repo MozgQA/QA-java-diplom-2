@@ -6,44 +6,45 @@ import io.qameta.allure.junit4.DisplayName;
 import model.Order;
 import model.User;
 import model.UserCredentials;
+import org.junit.Before;
 import org.junit.Test;
 
+import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
-public class OrderApiTest {
+public class OrderApiTest extends BaseUserTest{
 
-    private UserClient userClient;
-    private User user;
-    private String accessToken;
     private OrderClient orderClient;
     private Order order;
+
+
+    @Override
+    @Before
+    public void setUp() {
+        super.setUp();
+        getUserClient().create(getUser());
+        orderClient = new OrderClient();
+    }
 
     @Test
     @DisplayName("Тест на создание заказа с авторизацией")
     public void createOrderWithAuthorization() {
-        orderClient = new OrderClient();
-        userClient = new UserClient();
+        setAccessToken(getUserClient().login(UserCredentials.from(getUser()))
+                .extract().path("accessToken"));
         order = OrderGenerator.getOrder();
-        user = UserGenerator.getRandom();
-        userClient.create(user);
-        accessToken = userClient.login(UserCredentials.from(user))
-                .extract().path("accessToken");
-        orderClient.createOrderWithAuthorization(accessToken, order)
-                .statusCode(200)
+        orderClient.createOrderWithAuthorization(getAccessToken(), order)
+                .statusCode(SC_OK)
                 .body("success", equalTo(true))
                 .body("order", notNullValue());
-        userClient.delete(accessToken, UserCredentials.from(user));
     }
 
     @Test
     @DisplayName("Тест на создание заказа без авторизации")
     public void createOrderWithoutAuthorization() {
-        orderClient = new OrderClient();
-        userClient = new UserClient();
         order = OrderGenerator.getOrder();
         orderClient.createOrderWithoutAuthorization(order)
-                .statusCode(200)
+                .statusCode(SC_OK)
                 .body("success", equalTo(true))
                 .body("order", notNullValue());
     }
@@ -52,9 +53,8 @@ public class OrderApiTest {
     @DisplayName("Тест на создание заказа без ингредиентов")
     public void createOrderWithoutIngredients() {
         order = new Order(null);
-        orderClient = new OrderClient();
         orderClient.createOrderWithoutAuthorization(order)
-                .statusCode(400)
+                .statusCode(SC_BAD_REQUEST)
                 .body("success", equalTo(false))
                 .body("message", equalTo("Ingredient ids must be provided"));
     }
@@ -63,8 +63,7 @@ public class OrderApiTest {
     @DisplayName("Тест на создание заказа с некорректными ингредиентами ")
     public void createOrderWithIncorrectIngredients() {
         order = OrderGenerator.getOrderWithIncorrectIngredients();
-        orderClient = new OrderClient();
         orderClient.createOrderWithoutAuthorization(order)
-                .statusCode(500);
+                .statusCode(SC_INTERNAL_SERVER_ERROR);
     }
 }

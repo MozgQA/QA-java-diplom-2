@@ -1,56 +1,47 @@
-import client.UserClient;
-import generator.UserGenerator;
 import io.qameta.allure.junit4.DisplayName;
-import io.restassured.RestAssured;
-import model.User;
 import model.UserCredentials;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
+import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
-public class LoginApiTest {
+public class LoginApiTest extends BaseUserTest {
 
-    private UserClient userClient;
-    private User user;
-    private String accessToken;
-
-    private static final String INCORRECT_PASSWORD = "1";
-
-    @Before
-    public void setUp() {
-        userClient = new UserClient();
-        user = UserGenerator.getRandom();
-    }
-
-    @After
-    public void cleanUp() {
-        if (accessToken != null) {
-            userClient.delete(accessToken, UserCredentials.from(user));
-        }
-    }
+    private static final String INCORRECT_PASSWORD = "111";
 
     @Test
     @DisplayName("Тест на авторизацию пользователя")
     public void userCanBeLogin() {
-        userClient.create(user);
-        accessToken = userClient.login(UserCredentials.from(user))
-                .statusCode(200)
+        getUserClient().create(getUser());
+        setAccessToken(getUserClient().login(UserCredentials.from(getUser()))
+                .statusCode(SC_OK)
                 .body("accessToken", notNullValue())
                 .body("refreshToken", notNullValue())
-                .extract().path("accessToken");
+                .extract().path("accessToken"));
     }
 
     @Test
     @DisplayName("Тест на авторизацию пользователя с некорректным паролем")
     public void userLoginWithIncorrectPassword() {
-        user.setPassword(INCORRECT_PASSWORD);
-        accessToken = userClient.login(UserCredentials.from(user))
-                .statusCode(401)
+        getUser().setPassword(INCORRECT_PASSWORD);
+        setAccessToken(getUserClient().login(UserCredentials.from(getUser()))
+                .statusCode(SC_UNAUTHORIZED)
                 .body("success", equalTo(false))
                 .body("message", equalTo("email or password are incorrect"))
-                .extract().path("accessToken");
+                .extract().path("accessToken"));
     }
+
+    @Test
+    @DisplayName("Тест на авторизацию с неправильным email, но правильным паролем и именем")
+    public void loginWithIncorrectEmailButCorrectCredentials() {
+        getUser().setEmail("wrong" + getUser().getEmail());
+        setAccessToken(getUserClient().login(UserCredentials.from(getUser()))
+                .statusCode(SC_UNAUTHORIZED)
+                .body("success", equalTo(false))
+                .body("message", equalTo("email or password are incorrect"))
+                .extract().path("accessToken"));
+    }
+
 }
