@@ -23,19 +23,19 @@ public class ChangeInfoApiTest extends BaseUserTest{
     @Before
     public void setUp() {
         super.setUp();
-        getUserClient().create(getUser());
+        userClient.create(user);
     }
 
     @Test
     @DisplayName("Тест на изменение email с авторизацией")
     public void changeEmailWithAuthorization() {
-       setAccessToken(getUserClient().login(UserCredentials.from(getUser()))
+       accessToken = userClient.login(UserCredentials.from(user))
                 .statusCode(SC_OK)
                 .body("accessToken", notNullValue())
-                .extract().path("accessToken"));
+                .extract().path("accessToken");
 
-        getUser().setEmail(CHANGED_EMAIL);
-        getUserClient().changeInfo(getAccessToken(), UserCredentials.from(getUser()))
+        user.setEmail(CHANGED_EMAIL);
+        userClient.changeInfo(getAccessToken(), UserCredentials.from(user))
                 .statusCode(SC_OK)
                 .body("success", equalTo(true));
     }
@@ -43,13 +43,13 @@ public class ChangeInfoApiTest extends BaseUserTest{
     @Test
     @DisplayName("Тест на изменение пароля с авторизацией")
     public void changePasswordWithAuthorization() {
-        setAccessToken(getUserClient().login(UserCredentials.from(getUser()))
+        accessToken = userClient.login(UserCredentials.from(user))
                 .statusCode(SC_OK)
                 .body("accessToken", notNullValue())
-                .extract().path("accessToken"));
+                .extract().path("accessToken");
 
-        getUser().setPassword(CHANGED_PASSWORD);
-        getUserClient().changeInfo(getAccessToken(), UserCredentials.from(getUser()))
+        user.setPassword(CHANGED_PASSWORD);
+        userClient.changeInfo(getAccessToken(), UserCredentials.from(user))
                 .statusCode(SC_OK)
                 .body("success", equalTo(true));
     }
@@ -57,13 +57,13 @@ public class ChangeInfoApiTest extends BaseUserTest{
     @Test
     @DisplayName("Тест на изменение имени с авторизацией")
     public void changeNameWithAuthorization() {
-        setAccessToken(getUserClient().login(UserCredentials.from(getUser()))
+        accessToken = userClient.login(UserCredentials.from(user))
                 .statusCode(SC_OK)
                 .body("accessToken", notNullValue())
-                .extract().path("accessToken"));
+                .extract().path("accessToken");
 
-        getUser().setName(CHANGED_NAME);
-        getUserClient().changeInfo(getAccessToken(), UserCredentials.from(getUser()))
+        user.setName(CHANGED_NAME);
+        userClient.changeInfo(getAccessToken(), UserCredentials.from(user))
                 .statusCode(SC_OK)
                 .body("success", equalTo(true));
     }
@@ -71,13 +71,13 @@ public class ChangeInfoApiTest extends BaseUserTest{
     @Test
     @DisplayName("Тест на изменение email без авторизации ")
     public void changeEmailWithoutAuthorization() {
-        setAccessToken(getUserClient().login(UserCredentials.from(getUser()))
+        accessToken = userClient.login(UserCredentials.from(user))
                 .statusCode(SC_OK)
                 .body("accessToken", notNullValue())
-                .extract().path("accessToken"));
+                .extract().path("accessToken");
 
-        getUser().setEmail("email124789237504932562043875");
-        getUserClient().changeInfo("", UserCredentials.from(getUser()))
+        user.setEmail("email124789237504932562043875");
+        userClient.changeInfo("", UserCredentials.from(user))
                 .statusCode(SC_UNAUTHORIZED)
                 .body("success", equalTo(false))
                 .body("message", equalTo("You should be authorised"));
@@ -86,12 +86,12 @@ public class ChangeInfoApiTest extends BaseUserTest{
     @Test
     @DisplayName("Тест на попытку изменения пароля без авторизации")
     public void changePasswordWithoutAuthorization() {
-        setAccessToken(getUserClient().login(UserCredentials.from(getUser()))
+        accessToken = userClient.login(UserCredentials.from(user))
                 .statusCode(SC_OK)
                 .body("accessToken", notNullValue())
-                .extract().path("accessToken"));
-        getUser().setPassword(CHANGED_PASSWORD);
-        getUserClient().changeInfo("", UserCredentials.from(getUser()))
+                .extract().path("accessToken");
+        user.setPassword(CHANGED_PASSWORD);
+        userClient.changeInfo("", UserCredentials.from(user))
                 .statusCode(SC_UNAUTHORIZED)
                 .body("success", equalTo(false))
                 .body("message", equalTo("You should be authorised"));
@@ -100,12 +100,12 @@ public class ChangeInfoApiTest extends BaseUserTest{
     @Test
     @DisplayName("Тест на попытку изменения имени без авторизации")
     public void changeNameWithoutAuthorization() {
-        setAccessToken(getUserClient().login(UserCredentials.from(getUser()))
+        accessToken = userClient.login(UserCredentials.from(user))
                 .statusCode(SC_OK)
                 .body("accessToken", notNullValue())
-                .extract().path("accessToken"));
-        getUser().setName(CHANGED_NAME);
-        getUserClient().changeInfo("", UserCredentials.from(getUser()))
+                .extract().path("accessToken");
+        user.setName(CHANGED_NAME);
+        userClient.changeInfo("", UserCredentials.from(user))
                 .statusCode(SC_UNAUTHORIZED)
                 .body("success", equalTo(false))
                 .body("message", equalTo("You should be authorised"));

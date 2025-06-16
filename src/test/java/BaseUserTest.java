@@ -11,10 +11,9 @@ import org.junit.Before;
 @Getter
 public class BaseUserTest {
 
-    private UserClient userClient;
-    private User user;
-    @Setter
-    private String accessToken;
+    protected UserClient userClient;
+    protected User user;
+    protected String accessToken;
 
     @Before
     @Step("Подготовка тестовых данных")

@@ -23,15 +23,15 @@ public class OrderApiTest extends BaseUserTest{
     @Before
     public void setUp() {
         super.setUp();
-        getUserClient().create(getUser());
+        userClient.create(user);
         orderClient = new OrderClient();
     }
 
     @Test
     @DisplayName("Тест на создание заказа с авторизацией")
     public void createOrderWithAuthorization() {
-        setAccessToken(getUserClient().login(UserCredentials.from(getUser()))
-                .extract().path("accessToken"));
+        accessToken = userClient.login(UserCredentials.from(user))
+                .extract().path("accessToken");
         order = OrderGenerator.getOrder();
         orderClient.createOrderWithAuthorization(getAccessToken(), order)
                 .statusCode(SC_OK)

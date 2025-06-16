@@ -14,34 +14,34 @@ public class LoginApiTest extends BaseUserTest {
     @Test
     @DisplayName("Тест на авторизацию пользователя")
     public void userCanBeLogin() {
-        getUserClient().create(getUser());
-        setAccessToken(getUserClient().login(UserCredentials.from(getUser()))
+        userClient.create(user);
+        accessToken = userClient.login(UserCredentials.from(user))
                 .statusCode(SC_OK)
                 .body("accessToken", notNullValue())
                 .body("refreshToken", notNullValue())
-                .extract().path("accessToken"));
+                .extract().path("accessToken");
     }
 
     @Test
     @DisplayName("Тест на авторизацию пользователя с некорректным паролем")
     public void userLoginWithIncorrectPassword() {
-        getUser().setPassword(INCORRECT_PASSWORD);
-        setAccessToken(getUserClient().login(UserCredentials.from(getUser()))
+        user.setPassword(INCORRECT_PASSWORD);
+        accessToken = userClient.login(UserCredentials.from(user))
                 .statusCode(SC_UNAUTHORIZED)
                 .body("success", equalTo(false))
                 .body("message", equalTo("email or password are incorrect"))
-                .extract().path("accessToken"));
+                .extract().path("accessToken");
     }
 
     @Test
     @DisplayName("Тест на авторизацию с неправильным email, но правильным паролем и именем")
     public void loginWithIncorrectEmailButCorrectCredentials() {
-        getUser().setEmail("wrong" + getUser().getEmail());
-        setAccessToken(getUserClient().login(UserCredentials.from(getUser()))
+        user.setEmail("wrong" + user.getEmail());
+        accessToken = userClient.login(UserCredentials.from(user))
                 .statusCode(SC_UNAUTHORIZED)
                 .body("success", equalTo(false))
                 .body("message", equalTo("email or password are incorrect"))
-                .extract().path("accessToken"));
+                .extract().path("accessToken");
     }
 
 }

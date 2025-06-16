@@ -39,11 +39,11 @@ public class UsersOrdersApiTest extends BaseUserTest{
     @Test
     @DisplayName("Тест на получение заказов авторизованного пользователя")
     public void getUsersOrdersWithAuthorization() {
-       setAccessToken(getUserClient().login(UserCredentials.from(getUser()))
+        accessToken = userClient.login(UserCredentials.from(user))
                 .body("accessToken", notNullValue())
-                .extract().path("accessToken"));
+                .extract().path("accessToken");
         orderClient = new OrderClient();
-        orderClient.getOrdersWithAuthorization(getAccessToken())
+        orderClient.getOrdersWithAuthorization(accessToken)
                 .statusCode(SC_OK)
                 .body("success", equalTo(true))
                 .body("order", not(empty()));
